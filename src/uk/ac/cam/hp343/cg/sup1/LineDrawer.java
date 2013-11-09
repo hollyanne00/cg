@@ -75,25 +75,42 @@ public class LineDrawer implements Algorithm2D{
 				// setup line variables
 				double m = (y1 - y0) / (x1 - x0) ;
 				int x = Round(x0) ;
-				double yi = y0  - m * (x-x0) ;
+				double yi = y0  + m * (x-x0) ;
 				int	y = Round(yi) ;
 				double yf = yi - y ;
-				
 				// draw pixels
 				while ( x <= Round(x1) ) {
 					Renderer.setPixel(x,y,red, green, blue);
 					x = x + 1 ;
-					yf = yf - m ;
-					if ( yf > 0.5 ) {
-						System.out.println("yf = " + yf + " m= "+m);
+					yf = yf + m ;
+					if ( yf < -0.5 ) {
 						y = y -1;
-						yf = 1 + m - yf ;		
+						yf = yf+1;
 					} 
 				}					
 
 			}
 			else { // octant 7
-				System.out.printf( "Octant 7 not yet implemented\n") ;
+
+				System.out.println("Octant 7");
+				
+				// setup line variables
+				double m =  (x1 - x0)/(y1 - y0) ;
+				int y = Round(y0) ;
+				double xi = x0  + m * (y-y0) ;
+				int	x = Round(xi) ;
+				double xf = xi - x ;
+				// draw pixels
+				while ( y >= Round(y1) ) {
+					Renderer.setPixel(x,y,red, green, blue);
+					y = y - 1 ;
+					xf = xf - m ;
+					if ( xf > 0.5 ) {
+						x = x +1;
+						xf = xf-1;
+					} 
+				}	
+				
 			}
 		}
 	}
@@ -104,9 +121,9 @@ public class LineDrawer implements Algorithm2D{
 		//for( int i = 0 ; i < height ; i += 2 ){
 		//	BresenhamsLine(0,0,i,i,i*255/height,0,0);
 		//}
-//		BresenhamsLine(0,0,width-2,height-1, 0, 255, 0);
-		BresenhamsLine(0,height-10,width-1,0, 255, 0, 0);
-		/* test lines in all directions
+		//BresenhamsLine(0,0,width-2,height-1, 0, 255, 0);
+		//BresenhamsLine(0,height-1,width-10,0, 255, 0, 0);
+		/* test lines in all directions*/
 		for( int i = 0 ; i < 64 ; i++ ) {
 			double x0 = new Random().nextDouble() * (width-1);
 			double y0 = new Random().nextDouble() * (height-1);
@@ -117,7 +134,7 @@ public class LineDrawer implements Algorithm2D{
 			int blu = i < 32 ? i * 7 : ( 64 - i ) * 7 ;
 			BresenhamsLine( x0, y0, x1, y1, red, gre, blu);
 		}
-		*/
+		
 	}
 	
 	public static void main( String[] args ) {
