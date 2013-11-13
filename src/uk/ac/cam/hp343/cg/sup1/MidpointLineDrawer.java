@@ -1,41 +1,32 @@
 package uk.ac.cam.hp343.cg.sup1;
-
 import easel.Algorithm2D;
 import easel.Renderer;
 
-import java.util.Random ;
-
-public class MidpointLineDrawer implements Algorithm2D{
-
-	public static int Round( double a )
-	{
-		return (int) Math.round(a) ; // Math.round returns (long)
+public class MidpointLineDrawer implements Algorithm2D {
+	public void midpointLine(double x0, double y0, double x1, double y1, int red, int green, int blue){
+		
+	// make sure that x0 < x1 so in octant 1, 2, 7, 8
+	if( x0 > x1 ) {
+		double xt = x0 ; x0 = x1 ; x1 = xt ;
+		double yt = y0 ; y0 = y1 ; y1 = yt ;
 	}
-
-	public static void BresenhamsLine( double x0, double y0, double x1, double y1, int red, int green, int blue){
-
-		// make sure that x0 < x1 so in octant 1, 2, 7, 8
-		if( x0 > x1 ) {
-			double xt = x0 ; x0 = x1 ; x1 = xt ;
-			double yt = y0 ; y0 = y1 ; y1 = yt ;
-		}
 	
-		if( y1 > y0 ) { 
-			if( (y1-y0) <= (x1-x0) ) { // octant 1
+	double a = y1-y0;
+	double b = -(x1-x0);
+	double c = x1*y0 - x0*y1;
+
+		if(y0<y1){ // Octant 1 or 2
+			if( (y1-y0) <= (x1-x0) ) { //Octant 1
 				
 				System.out.println("Octant 1");
 				
-				// setup line variables
-				double a = y1-y0;
-				double b = -(x1-x0);
-				double c = x1*y0 - x0*y1;
-				
+				// Calculate initial x and initial y
 				int x = (int)Math.round(x0);
 				int y = (int)Math.round((-a*x-c)/b);
-
-				// Octant 1: need to go E or NE
-				System.out.println("Octant 1");
-				double d = a*(x+1) + b*(y+1/2) + c;
+				
+				double d = a*(x+1) + b*(y+0.5) + c;
+				
+				// Do we need to go E or SE
 				while(x<=Math.round(x1)){
 					Renderer.setPixel(x, y, red, green, blue);
 					if(d<0){
@@ -47,104 +38,112 @@ public class MidpointLineDrawer implements Algorithm2D{
 					x = x+1;
 				}
 				
-			}
-			else { // octant 2
+			} else { // Octant 2
 				
 				System.out.println("Octant 2");
 				
-				// setup line variables
-				double m = (x1 - x0) / (y1 - y0) ; // flip gradient
-				int y = Round(y0) ;
-				double xi = x0  + (y-y0)/m ;
-				int	x = Round(xi) ;
-				double xf = xi - x ;
-
-				// draw pixels
-				while ( x <= Round(x1) ) {
-					Renderer.setPixel(x,y,red, green, blue);
-					y = y + 1 ;
-					xf = xf + m ;
-					if ( xf > 0.5 ) {
-						x = x + 1 ;
-						xf = xf - 1 ;
+				// Calculate initial x and initial y
+				int y = (int)Math.round(y0);
+				int x = (int)Math.round((-b*y-c)/a);
+		
+				double d = a*(x+0.5) + b*(y+1) + c;
+				
+				// Do we need to go SE or S					
+				while(y<=Math.round(y1)){
+					Renderer.setPixel(x, y, red, green, blue);
+					if(d>0){
+						d = d+b; 
+					} else {
+						d = d+a+b;
+						x = x+1;
 					}
-				}						
+					y = y+1;
+				}					
+				
 			}
 			
-		}
-		else { // octant 7 or 8
-			if( (y0-y1) <= (x1-x0) ) { // octant 8
+		} else { // Octant 7 or 8
+			if( (y0-y1) <= (x1-x0) ) { // Octant 8
 				
 				System.out.println("Octant 8");
 				
-				// setup line variables
-				double m = (y1 - y0) / (x1 - x0) ;
-				int x = Round(x0) ;
-				double yi = y0  + m * (x-x0) ;
-				int	y = Round(yi) ;
-				double yf = yi - y ;
-				// draw pixels
-				while ( x <= Round(x1) ) {
-					Renderer.setPixel(x,y,red, green, blue);
-					x = x + 1 ;
-					yf = yf + m ;
-					if ( yf < -0.5 ) {
-						y = y -1;
-						yf = yf+1;
-					} 
-				}					
-
-			}
-			else { // octant 7
-
+				int x = (int)Math.round(x0);
+				int y = (int)Math.round((-a*x-c)/b);					
+				
+				double d = a*(x+1) + b*(y-0.5) + c;
+				
+				// Do we need to go E or NE					
+				while(x<=Math.round(x1)){
+					Renderer.setPixel(x, y, red, green, blue);
+					if(d>0){ 
+						d = d+a;
+					} else { 
+						d = d+a-b;
+						y = y-1;
+					}
+					x = x+1;
+				}
+				
+			} else { //Octant 7
+				
 				System.out.println("Octant 7");
 				
-				// setup line variables
-				double m =  (x1 - x0)/(y1 - y0) ;
-				int y = Round(y0) ;
-				double xi = x0  + m * (y-y0) ;
-				int	x = Round(xi) ;
-				double xf = xi - x ;
-				// draw pixels
-				while ( y >= Round(y1) ) {
-					Renderer.setPixel(x,y,red, green, blue);
-					y = y - 1 ;
-					xf = xf - m ;
-					if ( xf > 0.5 ) {
-						x = x +1;
-						xf = xf-1;
-					} 
-				}	
+				int y = (int)Math.round(y0);
+				int x = (int)Math.round((-b*y-c)/a);
+				
+				double d = a*(x+0.5) + b*(y-1) + c;
+				
+				// Do we need to go NE or N
+				while(y>=Math.round(y1)){
+					Renderer.setPixel(x, y, red, green, blue);
+					if(d<0){
+						d = d-b; 
+					} else {
+						d = d+a-b;
+						x = x+1;
+					}
+					y = y-1;
+				}					
 				
 			}
-		}
+		}	
 	}
 
-	public void runAlgorithm( int width, int height ) {
-
-		/* test lines in octant 1 only */
-		//for( int i = 0 ; i < height ; i += 2 ){
-			//BresenhamsLine(0,0,i,i,i*255/height,0,0);
-		//}
-		BresenhamsLine(0,0,width-1,height-10, 0, 255, 0);
-		//BresenhamsLine(0,height-1,width-10,0, 255, 0, 0);
-		/* test lines in all directions
-		for( int i = 0 ; i < 64 ; i++ ) {
-			double x0 = new Random().nextDouble() * (width-1);
-			double y0 = new Random().nextDouble() * (height-1);
-			double x1 = new Random().nextDouble() * (width-1);
-			double y1 = new Random().nextDouble() * (height-1);
-			int red = i > 32  ? (i-32) * 7 : 0 ;
-			int gre = i < 32  ? (32-i) * 7 : 0 ;
-			int blu = i < 32 ? i * 7 : ( 64 - i ) * 7 ;
-			BresenhamsLine( x0, y0, x1, y1, red, gre, blu);
-		}
-		*/
+	@Override
+	public void runAlgorithm(int width, int height) {
 		
+		// Find center assuming canvas size is odd
+    	int cx = (width - 1)/2;
+    	int cy = (height - 1)/2;
+    	
+    	// Remember the y here is flipped with respect to notes, and positive y points downwards, 
+    	// hence octants are counted clockwise rather that counter-clockwise    	
+    		
+    	double stepX = cx/5.0;
+    	double stepY = cy/5.0;
+    	
+    	for(double x = 0; x <= width/2; x += stepX)
+    	{
+    		
+    		midpointLine( cx, cy, cx+x, 0, (255-(int)x), 0, 0); // Drawing in octant 7 
+    		midpointLine( cx, cy, cx-x, 0, 0, (255-(int)x), (255-(int)x)); // Drawing in octant 6
+    		
+    		midpointLine( cx, cy, cx+x, height-1, 0, 0, (255-(int)x)); // Drawing in octant 2
+    		midpointLine( cx, cy, cx-x, height-1, (255-(int)x), (255-(int)x), 0); // Drawing in octant 3
+    	}
+    	
+    	for(double y = 0; y <= height/2; y += stepY)
+    	{
+    		midpointLine( cx, cy, 0, cy+y, 0, (255-(int)y), (255-(int)y)); // Drawing in octant 4 
+    		midpointLine( cx, cy, 0, cy-y, (255-(int)y), (255-(int)y), 0); // Drawing in octant 5
+    		
+    		midpointLine( cx, cy, width-1, cy+y, (255-(int)y), 0, 0); // Drawing in octant 1
+    		midpointLine( cx, cy, width-1, cy-y, 0, 0, (255-(int)y)); // Drawing in octant 8
+    	}
+	}
+
+	public static void main(String[] args){
+		Renderer.init2D( 41, 41, new MidpointLineDrawer() ) ;
 	}
 	
-	public static void main( String[] args ) {
-		System.out.println( "Hello" );
-		Renderer.init2D( 30, 30, new MidpointLineDrawer() ) ;
-	}
 }
