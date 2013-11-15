@@ -1,4 +1,4 @@
-package uk.ac.cam.hp343.cg.sup1;
+package uk.ac.cam.hp343.cg.lines;
 
 import easel.Algorithm2D;
 import easel.Renderer;

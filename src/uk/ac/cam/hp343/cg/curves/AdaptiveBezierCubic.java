@@ -1,8 +1,10 @@
-package uk.ac.cam.hp343.cg.sup1;
+package uk.ac.cam.hp343.cg.curves;
+
 import easel.Algorithm2D;
 import easel.Renderer;
 
-public class MidpointLineDrawer implements Algorithm2D {
+public class AdaptiveBezierCubic implements Algorithm2D {
+
 	public void midpointLine(double x0, double y0, double x1, double y1, int red, int green, int blue){
 		
 	// make sure that x0 < x1 so in octant 1, 2, 7, 8
@@ -108,42 +110,63 @@ public class MidpointLineDrawer implements Algorithm2D {
 			}
 		}	
 	}
-
-	@Override
-	public void runAlgorithm(int width, int height) {
+	
+	public void drawCurve(){
 		
-		// Find center assuming canvas size is odd
-    	int cx = (width - 1)/2;
-    	int cy = (height - 1)/2;
-    	
-    	// Remember the y here is flipped with respect to notes, and positive y points downwards, 
-    	// hence octants are counted clockwise rather that counter-clockwise    	
-    		
-    	double stepX = cx/5.0;
-    	double stepY = cy/5.0;
-    	
-    	for(double x = 0; x <= width/2; x += stepX)
-    	{
-    		
-    		midpointLine( cx, cy, cx+x, 0, (255-(int)x), 0, 0); // Drawing in octant 7 
-    		midpointLine( cx, cy, cx-x, 0, 0, (255-(int)x), (255-(int)x)); // Drawing in octant 6
-    		
-    		midpointLine( cx, cy, cx+x, height-1, 0, 0, (255-(int)x)); // Drawing in octant 2
-    		midpointLine( cx, cy, cx-x, height-1, (255-(int)x), (255-(int)x), 0); // Drawing in octant 3
-    	}
-    	
-    	for(double y = 0; y <= height/2; y += stepY)
-    	{
-    		midpointLine( cx, cy, 0, cy+y, 0, (255-(int)y), (255-(int)y)); // Drawing in octant 4 
-    		midpointLine( cx, cy, 0, cy-y, (255-(int)y), (255-(int)y), 0); // Drawing in octant 5
-    		
-    		midpointLine( cx, cy, width-1, cy+y, (255-(int)y), 0, 0); // Drawing in octant 1
-    		midpointLine( cx, cy, width-1, cy-y, 0, 0, (255-(int)y)); // Drawing in octant 8
-    	}
-	}
-
-	public static void main(String[] args){
-		Renderer.init2D( 41, 41, new MidpointLineDrawer() ) ;
 	}
 	
+	public void bezierCubic(double p0x, double p0y, double p1x, double p1y, double p2x, double p2y, double p3x, double p3y, double tolerance){
+		
+		double s;
+		
+		// Calculate distance of control point p1 from line
+		double d1;
+		s = ((p3x-p0x)*(p1x-p0x)+(p3y-p0y)*(p1y-p0y))/((p3x-p0x)*(p3x-p0x)+(p3y-p0y)*(p3y-p0y));
+		if(s>0&&s<1){
+			// Distance is |CP(s)|
+			d1 = Math.sqrt(Math.pow(((1-s)*p0x + s*p3x-p1x), 2)+Math.pow(((1-s)*p0y + s*p3y-p1y),2));
+		} else if(s<=0){
+			// Distance is |AC|
+			d1 = Math.sqrt(Math.pow(p1x-p0x,2) + Math.pow(p1y-p0y, 2));
+		} else {
+			// Distance is |BC|
+			d1 = Math.sqrt(Math.pow(p1x-p3x,2) + Math.pow(p1y-p3y, 2));
+		}
+		
+		double d2;
+		s = ((p3x-p0x)*(p2x-p0x)+(p3y-p0y)*(p2y-p0y))/((p3x-p0x)*(p3x-p0x)+(p3y-p0y)*(p3y-p0y));
+		if(s>0&&s<1){
+			// Distance is |DP(s)|
+			d2 = Math.sqrt(Math.pow(((1-s)*p0x + s*p3x-p1x), 2)+Math.pow(((1-s)*p0y + s*p3y-p1y),2));
+		} else if(s<=0){
+			// Distance is |AD|
+			d2 = Math.sqrt(Math.pow(p2x-p0x,2) + Math.pow(p2y-p0y, 2));
+		} else {
+			// Distance is |BD|
+			d2 = Math.sqrt(Math.pow(p2x-p3x,2) + Math.pow(p2y-p3y, 2));
+		}
+		
+		// Do p1 and p2 lie within <tolerance> of the line?
+		if(d1<=tolerance&&d2<=tolerance){
+			// Draw the line between p0 and p3
+			midpointLine(p0x, p0y, p3x, p3y, 0, 0, 0);
+		} else {
+			// Subdivide and recompute
+			bezierCubic(p0x, p0y, (0.5*p0x + 0.5*p1x), (0.5*p0y + 0.5*p1y), (0.25*p0x + 0.5*p1x + 0.25*p2x), (0.25*p0y + 0.5*p1y + 0.25*p2y),
+					(0.125*p0x + 3*0.125*p1x + 3*0.125*p2x + 0.125*p3x), (0.125*p0y + 3*0.125*p1y + 3*0.125*p2y + 0.125*p3y), tolerance);
+			bezierCubic((0.125*p0x + 3*0.125*p1x + 3*0.125*p2x + 0.125*p3x), (0.125*p0y + 3*0.125*p1y + 3*0.125*p2y + 0.125*p3y), 
+					(0.25*p1x + 0.5*p2x + 0.25*p3x), (0.25*p1y + 0.5*p2y + 0.25*p3y), (0.5*p2x + 0.5*p3x), (0.5*p2y + 0.5*p3y), p3x, p3y, tolerance);
+		}
+		
+	}
+	
+	@Override
+	public void runAlgorithm(int width, int height) {
+		bezierCubic(0,0,2*height,0,-height,width-1,height-1,width-1,0.33);
+	}
+	
+	public static void main(String[] args){
+		Renderer.init2D(40, 40, new AdaptiveBezierCubic());
+	}
+
 }
