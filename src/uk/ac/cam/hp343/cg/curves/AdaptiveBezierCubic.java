@@ -162,7 +162,7 @@ public class AdaptiveBezierCubic implements Algorithm2D {
 	
 	@Override
 	public void runAlgorithm(int width, int height) {
-		bezierCubic(0,0,2*height,0,-height,width-1,height-1,width-1,0.33);
+		bezierCubic(0,0,2*height,0,-height,width-1,height-1,width-1,1);
 	}
 	
 	public static void main(String[] args){
